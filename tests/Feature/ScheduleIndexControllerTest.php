@@ -62,6 +62,7 @@ test('API が利用できないときは 502 でエラーページを描画す�
     'JSON がオブジェクトではない' => fn () => Http::response('123', 200),
     'working_hours の欠落' => fn () => Http::response(scheduleApiSampleWith(['working_hours' => null])),
     'meetings の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings' => null])),
+    'meetings が空文字列' => fn () => Http::response(scheduleApiSampleWith(['meetings' => ''])),
     '日付の値が空文字列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22' => ''])),
     'summary の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.summary' => null])),
     '勤務時間の形式違い' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時'])),

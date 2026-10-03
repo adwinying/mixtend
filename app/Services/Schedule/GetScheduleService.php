@@ -6,8 +6,6 @@ use App\Exceptions\Schedule\ScheduleException;
 use App\Services\Schedule\Data\MeetingData;
 use App\Services\Schedule\Data\ScheduleData;
 use Carbon\CarbonImmutable;
-use Closure;
-use DateTimeImmutable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -107,7 +105,7 @@ class GetScheduleService
                 'working_hours' => ['required', 'array'],
                 'working_hours.start' => ['required', 'date_format:H:i'],
                 'working_hours.end' => ['required', 'date_format:H:i'],
-                'meetings' => ['present', 'array', $this->meetingsByDateRule(...)],
+                'meetings' => ['present', new MeetingsByDateRule],
                 'meetings.*.*.summary' => ['required', 'string'],
                 'meetings.*.*.start' => ['required', 'date_format:H:i'],
                 'meetings.*.*.end' => ['required', 'date_format:H:i'],
@@ -119,22 +117,5 @@ class GetScheduleService
 
         /** @var array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>} */
         return $schedule;
-    }
-
-    /**
-     * meetings は Y-m-d の日付をキー、ミーティングのリストを値とするマップ。
-     * キーは Validator のルールで検証できず、'meetings.*' => 'list' は空文字列の値を検証せずに通すため、クロージャで検証する。
-     */
-    private function meetingsByDateRule(string $attribute, mixed $meetings, Closure $fail): void
-    {
-        foreach ((array) $meetings as $date => $meetingsOfDay) {
-            $parsed = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $date);
-            if ($parsed === false || $parsed->format('Y-m-d') !== (string) $date) {
-                $fail("{$attribute} のキー {$date} が Y-m-d 形式の日付ではありません。");
-            }
-            if (! is_array($meetingsOfDay) || ! array_is_list($meetingsOfDay)) {
-                $fail("{$attribute}.{$date} がミーティングのリストではありません。");
-            }
-        }
     }
 }
