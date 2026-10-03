@@ -253,3 +253,15 @@ test('終了と開始が同時刻の連続するミーティングでは warning
 
     expect($warnings->getArrayCopy())->toBe([]);
 });
+
+test('予定が0件のときは空の days と勤務時間の hours を props として描画する', function () {
+    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith(['meetings' => new stdClass]))]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('schedule-index')
+            ->where('days', [])
+            ->has('hours', 10)
+        );
+});
