@@ -30,11 +30,11 @@ class GetMixtendScheduleAction
             Validator::make($schedule, [
                 'working_hours' => ['required', 'array'],
                 'working_hours.start' => ['required', 'date_format:H:i'],
-                'working_hours.end' => ['required', 'date_format:H:i'],
+                'working_hours.end' => ['required', 'date_format:H:i', 'after:working_hours.start'],
                 'meetings' => ['present', new MixtendMeetingsByDateRule],
                 'meetings.*.*.summary' => ['required', 'string'],
                 'meetings.*.*.start' => ['required', 'date_format:H:i'],
-                'meetings.*.*.end' => ['required', 'date_format:H:i'],
+                'meetings.*.*.end' => ['required', 'date_format:H:i', 'after:meetings.*.*.start'],
                 'meetings.*.*.timezone' => ['required', 'timezone:all'],
             ])->validate();
         } catch (ValidationException $exception) {
