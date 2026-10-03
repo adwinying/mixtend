@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\Services\Schedule\Data\ScheduleData;
+use App\Data\ScheduleData;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Data;
 

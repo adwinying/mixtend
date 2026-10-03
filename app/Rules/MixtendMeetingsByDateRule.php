@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Schedule;
+namespace App\Rules;
 
 use Closure;
 use DateTimeImmutable;
@@ -11,7 +11,7 @@ use Illuminate\Translation\PotentiallyTranslatedString;
  * meetings は Y-m-d の日付をキー、ミーティングのリストを値とするマップ。
  * キーは Validator のルールで検証できず、array や list は空文字列の値を検証せずに通すため、implicit なルールで検証する。
  */
-class MeetingsByDateRule implements ValidationRule
+class MixtendMeetingsByDateRule implements ValidationRule
 {
     /**
      * 空文字列でも検証する。

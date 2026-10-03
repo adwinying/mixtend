@@ -1,6 +1,7 @@
 <?php
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\MixtendHttpException;
+use App\Exceptions\MixtendScheduleException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Log\Events\MessageLogged;
@@ -13,6 +14,11 @@ beforeEach(function () {
     config(['inertia.ssr.enabled' => false]);
     Http::preventStrayRequests();
 });
+
+function mixtendScheduleUrl(): string
+{
+    return config()->string('services.mixtend.base_url').'/schedule.json';
+}
 
 /**
  * @param  array<string, mixed>  $overrides  ドット記法で上書きする。null を渡すとキーを削除する
@@ -45,7 +51,7 @@ function recordLogWarnings(): ArrayObject
 
 test('API が利用できないときは 502 でエラーページを描画する', function (mixed $fakeResponse) {
     config(['app.debug' => false]);
-    Http::fake([config('services.schedule.url') => $fakeResponse]);
+    Http::fake([mixtendScheduleUrl() => $fakeResponse]);
 
     $this->get(route('home'))
         ->assertStatus(502)
@@ -73,27 +79,27 @@ test('API が利用できないときは 502 でエラーページを描画す�
 
 test('API の障害をコンテキスト付きで1度だけ報告する', function () {
     Exceptions::fake();
-    Http::fake([config('services.schedule.url') => Http::response('Service Unavailable', 503)]);
+    Http::fake([mixtendScheduleUrl() => Http::response('Service Unavailable', 503)]);
 
     $this->get(route('home'))->assertStatus(502);
 
     Exceptions::assertReportedCount(1);
-    Exceptions::assertReported(fn (ScheduleException $e) => $e->context() === ['url' => config('services.schedule.url'), 'status' => 503]
+    Exceptions::assertReported(fn (MixtendHttpException $e) => $e->context() === ['url' => mixtendScheduleUrl(), 'status' => 503]
         && $e->getPrevious() instanceof RequestException);
 });
 
 test('API の検証エラーをコンテキストとして報告する', function () {
     Exceptions::fake();
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時']))]);
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時']))]);
 
     $this->get(route('home'))->assertStatus(502);
 
-    Exceptions::assertReported(fn (ScheduleException $e) => array_keys($e->context()['errors']) === ['working_hours.start']);
+    Exceptions::assertReported(fn (MixtendScheduleException $e) => array_keys($e->context()['errors']) === ['working_hours.start']);
 });
 
 test('debug 有効時は API の障害の詳細をエラーページに表示する', function () {
     config(['app.debug' => true]);
-    Http::fake([config('services.schedule.url') => Http::response('Service Unavailable', 503)]);
+    Http::fake([mixtendScheduleUrl() => Http::response('Service Unavailable', 503)]);
 
     $this->get(route('home'))
         ->assertStatus(502)
@@ -141,7 +147,7 @@ test('debug 有効時は想定外の例外の詳細をエラーページに表�
 });
 
 test('日付順の days と勤務時間の各正時の hours を props として描画する', function () {
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSample())]);
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSample())]);
 
     $this->get(route('home'))
         ->assertOk()
@@ -164,26 +170,26 @@ test('日付順の days と勤務時間の各正時の hours を props として
 });
 
 test('User-Agent を Mixtend Coding Test にして API を呼び出す', function () {
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSample())]);
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSample())]);
 
     $this->get(route('home'))->assertOk();
 
-    Http::assertSent(fn (Request $request) => $request->url() === config('services.schedule.url')
+    Http::assertSent(fn (Request $request) => $request->url() === mixtendScheduleUrl()
         && $request->hasHeader('User-Agent', 'Mixtend Coding Test'));
 });
 
-test('API のレスポンスを schedule チャネルに記録する', function () {
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSample())]);
+test('API のレスポンスを mixtend チャネルに記録する', function () {
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSample())]);
 
-    $logPath = tempnam(sys_get_temp_dir(), 'schedule-log');
-    config(['logging.channels.schedule.path' => $logPath]);
+    $logPath = tempnam(sys_get_temp_dir(), 'mixtend-log');
+    config(['logging.channels.mixtend.path' => $logPath]);
 
     $this->get(route('home'))->assertOk();
 
     $entry = json_decode((string) file_get_contents($logPath), true);
     expect($entry['datetime'])->not->toBeEmpty()
         ->and($entry['context'])->toBe([
-            'url' => config('services.schedule.url'),
+            'url' => mixtendScheduleUrl(),
             'status' => 200,
             'body' => scheduleApiSample(),
         ]);
@@ -192,7 +198,7 @@ test('API のレスポンスを schedule チャネルに記録する', function 
 });
 
 test('Tokyo 以外のタイムゾーンのミーティングを日本時間に変換し、変換後の日付と開始時刻の順に並べる', function () {
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith([
         // Honolulu（UTC-10）の 20:00 は翌日 15:00 の日本時間になり、2021-03-22 の列は無くなる
         'meetings.2021-03-22.0' => ['summary' => 'Meeting 1', 'start' => '20:00', 'end' => '21:00', 'timezone' => 'Pacific/Honolulu'],
         // London（UTC+0）の 01:30 は同じ日の 10:30 の日本時間になる
@@ -217,7 +223,7 @@ test('Tokyo 以外のタイムゾーンのミーティングを日本時間に�
 
 test('同じ日のミーティングが重なると warning を記録し、props はそのまま描画する', function () {
     $warnings = recordLogWarnings();
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith([
         // 並べ替えると先頭になり、隣り合わない Meeting 3 とも重なる
         'meetings.2021-03-23.2' => ['summary' => 'Meeting 5', 'start' => '13:00', 'end' => '16:30', 'timezone' => 'Asia/Tokyo'],
     ]))]);
@@ -248,7 +254,7 @@ test('同じ日のミーティングが重なると warning を記録し、props
 
 test('終了と開始が同時刻の連続するミーティングでは warning を記録しない', function () {
     $warnings = recordLogWarnings();
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith([
         'meetings.2021-03-23.1.start' => '15:00',
     ]))]);
 
@@ -258,7 +264,7 @@ test('終了と開始が同時刻の連続するミーティングでは warning
 });
 
 test('予定が0件のときは空の days と勤務時間の hours を props として描画する', function () {
-    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith(['meetings' => new stdClass]))]);
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith(['meetings' => new stdClass]))]);
 
     $this->get(route('home'))
         ->assertOk()

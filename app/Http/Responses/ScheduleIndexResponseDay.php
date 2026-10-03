@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\Services\Schedule\Data\MeetingData;
+use App\Data\ScheduleMeetingData;
 use Spatie\LaravelData\Data;
 
 class ScheduleIndexResponseDay extends Data
@@ -17,12 +17,12 @@ class ScheduleIndexResponseDay extends Data
     ) {}
 
     /**
-     * @param  list<MeetingData>  $meetings
+     * @param  list<ScheduleMeetingData>  $meetings
      */
     public static function fromMeetings(string $date, array $meetings): self
     {
         return new self($date, array_map(
-            fn (MeetingData $meeting) => new ScheduleIndexResponseMeeting($meeting->summary, $meeting->start, $meeting->end),
+            fn (ScheduleMeetingData $meeting) => new ScheduleIndexResponseMeeting($meeting->summary, $meeting->start, $meeting->end),
             $meetings,
         ));
     }

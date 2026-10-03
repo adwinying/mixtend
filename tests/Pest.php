@@ -18,6 +18,10 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature');
 
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Unit');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations
@@ -45,7 +49,7 @@ expect()->extend('toBeOne', function () {
 */
 
 /**
- * スケジュール API ドキュメントのサンプルレスポンス。
+ * Mixtend のスケジュールのドキュメントにあるサンプルレスポンス。
  * 日付キーの並び替えを検証できるよう、順序をあえて崩している。
  *
  * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}
