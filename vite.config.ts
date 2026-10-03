@@ -67,7 +67,7 @@ export default defineConfig({
         },
     },
     test: {
-        include: ['resources/js/tests/**/*.test.ts'],
+        include: ['resources/js/**/*.test.ts'],
         setupFiles: ['resources/js/tests/setup.ts'],
         browser: {
             enabled: true,
@@ -78,6 +78,15 @@ export default defineConfig({
             instances: [{ browser: 'chromium' }],
             expect: {
                 toMatchScreenshot: {
+                    // テストは実装の隣に置くが、ベースラインはソースに散らばらないよう 1 か所にまとめる
+                    resolveScreenshotPath: ({
+                        root,
+                        arg,
+                        browserName,
+                        platform,
+                        ext,
+                    }) =>
+                        `${root}/resources/js/tests/__screenshots__/${arg}-${browserName}-${platform}${ext}`,
                     screenshotOptions: {
                         animations: 'disabled',
                         caret: 'hide',
