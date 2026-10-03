@@ -2,8 +2,11 @@
 
 namespace App\Services\Schedule;
 
+use App\Exceptions\Schedule\ScheduleException;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use JsonException;
 
 /**
  * スケジュール API との HTTP 通信だけを担当する。
@@ -18,14 +21,20 @@ class ScheduleApiClient
      * スケジュールを取得し、レスポンスを schedule チャネルに記録する。
      *
      * @return array<mixed>
+     *
+     * @throws ScheduleException 接続失敗・タイムアウト・非2xx・JSON オブジェクト以外のレスポンス
      */
     public function fetch(): array
     {
         $url = config()->string('services.schedule.url');
 
-        $response = Http::withUserAgent(self::USER_AGENT)
-            ->timeout(self::TIMEOUT_SECONDS)
-            ->get($url);
+        try {
+            $response = Http::withUserAgent(self::USER_AGENT)
+                ->timeout(self::TIMEOUT_SECONDS)
+                ->get($url);
+        } catch (ConnectionException $exception) {
+            throw new ScheduleException('スケジュール API に接続できません', ['url' => $url], $exception);
+        }
 
         Log::channel('schedule')->info('スケジュール API のレスポンス', [
             'url' => $url,
@@ -34,6 +43,22 @@ class ScheduleApiClient
             'body' => $response->json() ?? $response->body(),
         ]);
 
-        return (array) $response->json();
+        $context = ['url' => $url, 'status' => $response->status()];
+
+        if ($response->failed()) {
+            throw new ScheduleException('スケジュール API がエラーを返しました', $context, $response->toException());
+        }
+
+        try {
+            $schedule = $response->json(flags: JSON_THROW_ON_ERROR);
+        } catch (JsonException $exception) {
+            throw new ScheduleException('スケジュール API のレスポンスが不正な JSON です', $context, $exception);
+        }
+
+        if (! is_array($schedule)) {
+            throw new ScheduleException('スケジュール API のレスポンスが JSON オブジェクトではありません', $context);
+        }
+
+        return $schedule;
     }
 }

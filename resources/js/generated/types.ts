@@ -16,6 +16,10 @@ prev_page_url: string | null,
 },
 };
 export type CursorPaginatorInterface<TKey, TValue> = CursorPaginator<TKey, TValue>;
+export type ErrorResponse = {
+status: number,
+detail: string | null,
+};
 export type LengthAwarePaginator<TKey, TValue> = {
 data: TKey extends string ? Record<TKey, TValue> : TValue[],
 links: {
