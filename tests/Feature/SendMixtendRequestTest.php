@@ -31,3 +31,12 @@ test('非2xx では完全な URL とステータスを持つ MixtendHttpExceptio
             'status' => 404,
         ]));
 });
+
+test('接続失敗でも、例外の context の url は解決後の完全な URL になる', function () {
+    Http::fake(['https://mixtend.test/api/schedule.json?week=1' => Http::failedConnection()]);
+
+    expect(fn () => app(SendMixtendRequest::class)->run(MixtendRoute::Schedule, ['week' => 1]))
+        ->toThrow(fn (MixtendHttpException $e) => expect($e->context())->toBe([
+            'url' => 'https://mixtend.test/api/schedule.json?week=1',
+        ]));
+});

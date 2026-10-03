@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
  */
 class GetMixtendSchedule
 {
-    public function __construct(private SendMixtendRequest $send) {}
+    public function __construct(private SendMixtendRequest $sendMixtendRequest) {}
 
     /**
      * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}
@@ -24,7 +24,7 @@ class GetMixtendSchedule
      */
     public function run(): array
     {
-        $schedule = $this->send->run(MixtendRoute::Schedule);
+        $schedule = $this->sendMixtendRequest->run(MixtendRoute::Schedule);
 
         try {
             Validator::make($schedule, [
