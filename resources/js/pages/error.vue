@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import CommonLayout from '@/components/common/layout.vue';
 import type { ErrorResponse } from '@/generated/types';
 
 const props = defineProps<ErrorResponse>();
@@ -32,10 +32,10 @@ const message = computed(() => MESSAGES[props.status] ?? MESSAGES[500]);
 </script>
 
 <template>
-    <main
-        class="flex min-h-screen flex-col items-center justify-center bg-white px-4 text-foreground"
+    <CommonLayout
+        :title="message.title"
+        class="flex flex-col items-center justify-center px-4"
     >
-        <Head :title="message.title" />
         <p class="text-6xl font-bold text-primary">{{ status }}</p>
         <h1 class="mt-4 text-2xl">{{ message.title }}</h1>
         <p class="mt-2">{{ message.description }}</p>
@@ -43,5 +43,5 @@ const message = computed(() => MESSAGES[props.status] ?? MESSAGES[500]);
             v-if="detail"
             class="mt-8 max-w-full overflow-x-auto rounded bg-gray-100 p-4 text-left text-sm"
             >{{ detail }}</pre>
-    </main>
+    </CommonLayout>
 </template>

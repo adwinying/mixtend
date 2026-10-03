@@ -51,6 +51,10 @@ export default defineConfig({
                 formVariants: true,
             }),
     ]),
+    resolve: {
+        // laravel() と同じエイリアス。laravel() を外す VRT でも使えるよう明示する
+        alias: { '@': '/resources/js' },
+    },
     server: {
         watch: {
             ignored: [
