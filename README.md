@@ -11,14 +11,14 @@ Mixtend の `schedule.json` を取得し、Figma のデザインどおりのカ�
 | 評価基準                   | 対応                                                                                    | 主なファイル                                                                                                                   |
 | -------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | API 連携                   | 取得・検証・日本時間への変換をバックエンドで行い、整えた props を渡す。API の障害は 502 | [`app/Actions/`](app/Actions/)                                                                                                 |
-| UI デザイン通りの実装      | Figma のフレームと同じ 1440px 幅で VRT を取り、デザインからのずれを検知する             | [`resources/js/features/schedule/`](resources/js/features/schedule/)                                                           |
+| UI デザイン通りの実装      | Figma に合わせたベースラインと 1440px 幅の VRT で比較し、ずれを検知する                 | [`resources/js/features/schedule/`](resources/js/features/schedule/)                                                           |
 | コードの可読性と構造       | Action クラスで責務を分け、PHP から TypeScript まで型をつなぐ                           | [設計判断](#設計判断)                                                                                                          |
 | ボーナス: User-Agent       | すべてのリクエストを `Mixtend Coding Test` で送る                                       | [`GetMixtendHttpClientAction.php`](app/Actions/Mixtend/GetMixtendHttpClientAction.php)                                         |
 | ボーナス: レスポンスのログ | すべてのレスポンスを `storage/logs/mixtend.log` に JSON で記録する                      | [`SendMixtendRequestAction.php`](app/Actions/Mixtend/SendMixtendRequestAction.php)、[`config/logging.php`](config/logging.php) |
 
 ## 環境構築
 
-前提: [mise](https://mise.jdx.dev/)、Docker（VRT のみ）
+前提: [mise](https://mise.jdx.dev/)（シェルで有効化済み）、Docker（VRT のみ）
 
 ```sh
 mise install       # PHP 8.5・Composer・Node 24
@@ -57,14 +57,13 @@ http://localhost:8000
 
 - 表示のタイムゾーンは Asia/Tokyo に固定する
 - 勤務時間は日本時間とみなし、変換しない
-- ミーティングは日本時間に変換したあと、変換後の日付で振り分ける
 
 ### 表示
 
 - 列はミーティングのある日付だけで、日付順に並べる
 - ミーティングは勤務時間内に収まる
-- 同じ日に重なるミーティングは warning を記録し、そのまま重ねて描画する。終了と開始が同時刻なら重なりとみなさない
-- 長い件名は省略し、全文を `title` で表示する
+- 重なるミーティングのレイアウトは未実装。いまは warning を記録し、重ねて描画する。終了と開始が同時刻なら重なりとみなさない
+- 長い件名は省略し、全文は `title` 属性のツールチップで表示する
 
 ### 対象外
 
@@ -77,7 +76,7 @@ http://localhost:8000
 
 ### 技術選定
 
-仕様は「PHP 7.3 以上」「簡単なカレンダー UI」だが、Laravel 13・Inertia v3・laravel-data による型生成・VRT・CI を入れた。画面や機能を足すときに、同じ構造のまま広げられるようにするため。API の境界から Vue の props まで型がつながり、デザインとの一致は VRT が守る。使い捨てのツールなら削る。PHP 8.5 は「7.3 以上」を満たす。
+仕様は「PHP 7.3 以上」「簡単なカレンダー UI」だが、PHP 8.5・Laravel 13・Inertia v3・laravel-data による型生成・VRT・CI を入れた。画面や機能を足すときに、同じ構造のまま広げられるようにするため。API の境界から Vue の props まで型がつながり、デザインとの一致は Figma に合わせたベースラインとの VRT が守る。使い捨てのツールなら削る。
 
 ### Action クラス
 
@@ -94,20 +93,20 @@ ScheduleIndexController
       └ GetMixtendHttpClientAction  ベース URL・User-Agent・タイムアウト
 ```
 
-エンドポイントを増やすときは [`MixtendRoute`](app/Enums/MixtendRoute.php) に case を足し、検証する薄い Action を 1 つ書けばよい。ベース URL は `MIXTEND_BASE_URL` で差し替えられ、ステージングやモックに向けられる。
+エンドポイントを増やすときは [`MixtendRoute`](app/Enums/MixtendRoute.php) に case と `method()` の対応を足し、検証する薄い Action を 1 つ書けばよい。ベース URL は `MIXTEND_BASE_URL` で差し替えられ、ステージングやモックに向けられる。
 
 ### その他
 
-- **例外を通信と形式で分ける** — `MixtendHttpException` と `MixtendScheduleException`。障害と API の仕様変更をログで見分けるため。どちらも完全な URL をコンテキストに持ち、curl で再現できる
+- **例外を通信と形式で分ける** — `MixtendHttpException` と `MixtendScheduleException`。障害と API の仕様変更をログで見分けるため。前者は完全な URL をコンテキストに持ち curl で再現でき、後者は検証エラーを持つ
 - **検証は Laravel の Validator とカスタムルール** — laravel-data の検証は日付をキーとするマップに合わないため。キーは [`MixtendMeetingsByDateRule`](app/Rules/MixtendMeetingsByDateRule.php) で検証する
 - **型を PHP から TypeScript へ生成する** — laravel-data の Response クラスから [`resources/js/generated/types.ts`](resources/js/generated/types.ts) を生成する。生成物が古ければ CI が落ちる
 - **フロントエンドは `features/<ドメイン>` にまとめる** — 画面に属するコンポーネントとテストを同じ場所に置く。`pages/` は Inertia のページの入口
-- **テストの境界は 2 つ** — バックエンドはフィーチャーテスト（HTTP をフェイクし、props・ログ・ステータスを検証）、フロントエンドは VRT。内部の構造に依存しないので、自由にリファクタできる。VRT はデザインとの一致を守り、AI エージェントが自分の変更を確かめる手段にもなる
+- **テストの境界は 2 つ** — バックエンドはフィーチャーテスト（HTTP をフェイクし、props・ログ・ステータスを検証）、フロントエンドは VRT。内部の構造に依存しないので、自由にリファクタできる。VRT は Figma に合わせたベースラインとの一致を守り、AI エージェントが自分の変更を確かめる手段にもなる
 - **エラーページは同じ URL のまま描画する** — リダイレクトしないので、再読み込みで API の取得を再試行できる。403・404・500・503 も同じエラーページにする
 
 ## AI の活用
 
-Claude Opus 5.5 と GPT-6.1 Sol を使って開発した。設計の判断とレビューは自分で行い、Issue ごとに PR を作ってレビューを重ねた。
+Claude Opus 5.5 と GPT-6.1-Sol を使って開発した。設計の判断とレビューは自分で行い、Issue ごとに PR を作ってレビューを重ねた。
 
 - ワークフローは [Matt Pocock の skills](https://www.aihero.dev/skills) に沿っている。`AGENTS.md` と `docs/agents` はその設定
 - VRT は、エージェントが UI の変更を自分で確かめるためのフィードバックループとして入れた
