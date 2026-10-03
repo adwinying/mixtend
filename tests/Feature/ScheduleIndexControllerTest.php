@@ -93,9 +93,13 @@ test('API が利用できないときは 502 でエラーページを描画す�
     '日付の値が空文字列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22' => ''])),
     'summary の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.summary' => null])),
     '勤務時間の形式違い' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時'])),
-    '勤務時間の終了が開始以前' => fn () => Http::response(scheduleApiSampleWith(['working_hours.end' => '10:00'])),
+    '勤務時間の終了が開始と同時刻' => fn () => Http::response(scheduleApiSampleWith(['working_hours.end' => '10:00'])),
+    '勤務時間の終了が開始より前' => fn () => Http::response(scheduleApiSampleWith(['working_hours.end' => '09:59'])),
+    '勤務時間の開始が配列' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => ['10:00']])),
     'ミーティングの時刻の形式違い' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '11:00:00'])),
-    'ミーティングの終了が開始以前' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '10:00'])),
+    'ミーティングの終了が開始と同時刻' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '10:00'])),
+    'ミーティングの終了が開始より前' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '09:59'])),
+    'ミーティングの開始が配列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.start' => ['10:00']])),
     '不正なタイムゾーン' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.timezone' => 'Asia/Nowhere'])),
     '日付キーの形式違い' => fn () => Http::response(scheduleApiSampleWith(['meetings' => ['2021/03/22' => []]])),
 ]);
@@ -113,11 +117,11 @@ test('API の障害をコンテキスト付きで1度だけ報告する', functi
 
 test('API の検証エラーをコンテキストとして報告する', function () {
     Exceptions::fake();
-    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.summary' => null]))]);
+    Http::fake([mixtendScheduleUrl() => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時']))]);
 
     $this->get(route('home'))->assertStatus(502);
 
-    Exceptions::assertReported(fn (MixtendScheduleException $e) => array_keys($e->context()['errors']) === ['meetings.2021-03-22.0.summary']);
+    Exceptions::assertReported(fn (MixtendScheduleException $e) => array_keys($e->context()['errors']) === ['working_hours.start']);
 });
 
 test('debug 有効時は API の障害の詳細をエラーページに表示する', function () {

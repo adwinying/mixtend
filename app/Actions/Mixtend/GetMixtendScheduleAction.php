@@ -30,12 +30,18 @@ class GetMixtendScheduleAction
             Validator::make($schedule, [
                 'working_hours' => ['required', 'array'],
                 'working_hours.start' => ['required', 'date_format:H:i'],
-                'working_hours.end' => ['required', 'date_format:H:i', 'after:working_hours.start'],
+                'working_hours.end' => ['required', 'date_format:H:i'],
                 'meetings' => ['present', new MixtendMeetingsByDateRule],
                 'meetings.*.*.summary' => ['required', 'string'],
                 'meetings.*.*.start' => ['required', 'date_format:H:i'],
-                'meetings.*.*.end' => ['required', 'date_format:H:i', 'after:meetings.*.*.start'],
+                'meetings.*.*.end' => ['required', 'date_format:H:i'],
                 'meetings.*.*.timezone' => ['required', 'timezone:all'],
+            ])->validate();
+
+            // after は比較先の形式を検証しないため、形式がすべて正しいと確定してから順序を検証する
+            Validator::make($schedule, [
+                'working_hours.end' => ['after:working_hours.start'],
+                'meetings.*.*.end' => ['after:meetings.*.*.start'],
             ])->validate();
         } catch (ValidationException $exception) {
             throw new MixtendScheduleException('スケジュールのレスポンスが想定外の形式です', ['errors' => $exception->errors()], $exception);
