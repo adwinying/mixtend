@@ -82,9 +82,9 @@ return [
             'replace_placeholders' => true,
         ],
 
-        'schedule' => [
+        'mixtend' => [
             'driver' => 'single',
-            'path' => storage_path('logs/schedule.log'),
+            'path' => storage_path('logs/mixtend.log'),
             'level' => 'info',
             'formatter' => JsonFormatter::class,
         ],

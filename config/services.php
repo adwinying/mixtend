@@ -28,8 +28,8 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'schedule' => [
-        'url' => env('SCHEDULE_API_URL', 'https://mixtend.github.io/schedule.json'),
+    'mixtend' => [
+        'base_url' => env('MIXTEND_BASE_URL', 'https://mixtend.github.io'),
     ],
 
     'slack' => [

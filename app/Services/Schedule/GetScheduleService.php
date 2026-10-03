@@ -2,17 +2,16 @@
 
 namespace App\Services\Schedule;
 
+use App\Actions\Mixtend\GetMixtendSchedule;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use App\Exceptions\Mixtend\MixtendScheduleException;
 use App\Services\Schedule\Data\MeetingData;
 use App\Services\Schedule\Data\ScheduleData;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 /**
- * スケジュールを API から取得し、日本時間に変換して日付ごとにまとめる。
+ * Mixtend から取得したスケジュールを日本時間に変換して日付ごとにまとめる。
  * レスポンスはキャッシュせず、呼び出しのたびに取得する。
  *
  * データについて以下を前提とする。前提が崩れたら表示ロジックの変更が必要。
@@ -24,7 +23,7 @@ class GetScheduleService
 {
     private const string TOKYO_TIMEZONE = 'Asia/Tokyo';
 
-    public function __construct(private ScheduleApiClient $client) {}
+    public function __construct(private GetMixtendSchedule $getMixtendSchedule) {}
 
     /**
      * @throws MixtendHttpException Mixtend との通信の失敗
@@ -32,7 +31,7 @@ class GetScheduleService
      */
     public function run(): ScheduleData
     {
-        $schedule = $this->validate($this->client->fetch());
+        $schedule = $this->getMixtendSchedule->run();
 
         $meetingsByDate = [];
         foreach ($schedule['meetings'] as $date => $meetings) {
@@ -90,34 +89,5 @@ class GetScheduleService
                 $latestEnding = $meeting;
             }
         }
-    }
-
-    /**
-     * API のレスポンスは信頼境界なので、形式を検証してから使う。
-     *
-     * @param  array<mixed>  $schedule
-     * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}
-     *
-     * @throws MixtendScheduleException
-     */
-    private function validate(array $schedule): array
-    {
-        try {
-            Validator::make($schedule, [
-                'working_hours' => ['required', 'array'],
-                'working_hours.start' => ['required', 'date_format:H:i'],
-                'working_hours.end' => ['required', 'date_format:H:i'],
-                'meetings' => ['present', new MeetingsByDateRule],
-                'meetings.*.*.summary' => ['required', 'string'],
-                'meetings.*.*.start' => ['required', 'date_format:H:i'],
-                'meetings.*.*.end' => ['required', 'date_format:H:i'],
-                'meetings.*.*.timezone' => ['required', 'timezone:all'],
-            ])->validate();
-        } catch (ValidationException $exception) {
-            throw new MixtendScheduleException('スケジュール API のレスポンスが想定外の形式です', ['errors' => $exception->errors()], $exception);
-        }
-
-        /** @var array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>} */
-        return $schedule;
     }
 }
