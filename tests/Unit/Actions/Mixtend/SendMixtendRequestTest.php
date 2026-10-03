@@ -6,6 +6,8 @@ use App\Exceptions\Mixtend\MixtendHttpException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
+pest()->group('actions');
+
 beforeEach(function () {
     Http::preventStrayRequests();
     config(['services.mixtend.base_url' => 'https://mixtend.test/api/']);

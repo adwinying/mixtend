@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Schedule;
+namespace App\Actions\Mixtend;
 
 use Closure;
 use DateTimeImmutable;

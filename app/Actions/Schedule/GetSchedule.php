@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Schedule;
+namespace App\Actions\Schedule;
 
 use App\Actions\Mixtend\GetMixtendSchedule;
+use App\Actions\Schedule\Data\MeetingData;
+use App\Actions\Schedule\Data\ScheduleData;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use App\Exceptions\Mixtend\MixtendScheduleException;
-use App\Services\Schedule\Data\MeetingData;
-use App\Services\Schedule\Data\ScheduleData;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
 
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  * - 勤務時間はミーティングと同じタイムゾーン（Asia/Tokyo）
  * - 重なりのレイアウトには未対応。重なるデータが現れたら warning を記録する
  */
-class GetScheduleService
+class GetSchedule
 {
     private const string TOKYO_TIMEZONE = 'Asia/Tokyo';
 

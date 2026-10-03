@@ -5,7 +5,6 @@ namespace App\Actions\Mixtend;
 use App\Enums\MixtendRoute;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use App\Exceptions\Mixtend\MixtendScheduleException;
-use App\Services\Schedule\MeetingsByDateRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 

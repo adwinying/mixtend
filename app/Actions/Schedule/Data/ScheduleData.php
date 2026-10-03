@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Schedule\Data;
+namespace App\Actions\Schedule\Data;
 
 final readonly class ScheduleData
 {

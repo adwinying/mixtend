@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\Services\Schedule\Data\MeetingData;
+use App\Actions\Schedule\Data\MeetingData;
 use Spatie\LaravelData\Data;
 
 class ScheduleIndexResponseDay extends Data

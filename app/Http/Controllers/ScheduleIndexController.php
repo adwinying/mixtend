@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Schedule\GetSchedule;
 use App\Exceptions\Mixtend\MixtendException;
 use App\Http\Responses\ErrorResponse;
 use App\Http\Responses\ScheduleIndexResponse;
-use App\Services\Schedule\GetScheduleService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +16,7 @@ class ScheduleIndexController extends Controller
     /**
      * API の障害は環境を問わず 502 のエラーページにする。同じ URL のままなので、再読み込みで再試行できる。
      */
-    public function __invoke(Request $request, GetScheduleService $getSchedule): Response|SymfonyResponse
+    public function __invoke(Request $request, GetSchedule $getSchedule): Response|SymfonyResponse
     {
         try {
             $schedule = $getSchedule->run();
