@@ -2,7 +2,7 @@
 
 use App\Actions\Mixtend\SendMixtendRequestAction;
 use App\Enums\MixtendRoute;
-use App\Exceptions\Mixtend\MixtendHttpException;
+use App\Exceptions\MixtendHttpException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 

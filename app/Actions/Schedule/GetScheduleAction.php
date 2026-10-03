@@ -5,8 +5,8 @@ namespace App\Actions\Schedule;
 use App\Actions\Mixtend\GetMixtendScheduleAction;
 use App\Data\ScheduleData;
 use App\Data\ScheduleMeetingData;
-use App\Exceptions\Mixtend\MixtendHttpException;
-use App\Exceptions\Mixtend\MixtendScheduleException;
+use App\Exceptions\MixtendHttpException;
+use App\Exceptions\MixtendScheduleException;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions\Mixtend;
+namespace App\Exceptions;
 
 use RuntimeException;
 use Throwable;

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Schedule\GetScheduleAction;
-use App\Exceptions\Mixtend\MixtendException;
+use App\Exceptions\MixtendException;
 use App\Http\Responses\ErrorResponse;
 use App\Http\Responses\ScheduleIndexResponse;
 use Illuminate\Http\Request;

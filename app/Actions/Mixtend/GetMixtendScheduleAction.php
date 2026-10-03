@@ -3,8 +3,8 @@
 namespace App\Actions\Mixtend;
 
 use App\Enums\MixtendRoute;
-use App\Exceptions\Mixtend\MixtendHttpException;
-use App\Exceptions\Mixtend\MixtendScheduleException;
+use App\Exceptions\MixtendHttpException;
+use App\Exceptions\MixtendScheduleException;
 use App\Rules\MixtendMeetingsByDateRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;

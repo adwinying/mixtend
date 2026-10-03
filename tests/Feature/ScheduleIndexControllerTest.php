@@ -1,7 +1,7 @@
 <?php
 
-use App\Exceptions\Mixtend\MixtendHttpException;
-use App\Exceptions\Mixtend\MixtendScheduleException;
+use App\Exceptions\MixtendHttpException;
+use App\Exceptions\MixtendScheduleException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Log\Events\MessageLogged;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\Exceptions\Mixtend\MixtendException;
+use App\Exceptions\MixtendException;
 use Spatie\LaravelData\Data;
 use Throwable;
 
