@@ -5,24 +5,32 @@ import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig, lazyPlugins } from 'vite-plus';
+import { playwright } from 'vite-plus/test/browser-playwright';
+
+/** VRT は Laravel を介さないため、public/hot を書き換える laravel() と artisan を呼ぶ wayfinder() を外す */
+const isVitest = process.env.VITEST !== undefined;
+
+/** Figma のフレームと同じデスクトップのサイズ。モバイルのデザインは提供されていないため、モバイルの VRT は省略する */
+const vrtViewport = { width: 1440, height: 1473 };
 
 export default defineConfig({
     plugins: lazyPlugins(() => [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
-            refresh: true,
-            fonts: [
-                // Figma は Noto Sans で、和文は Noto Sans JP にフォールバックする
-                bunny('Noto Sans', {
-                    weights: [400],
-                }),
-                // 既定の subsets は latin のみで、和文が端末のフォントで描画されるため japanese を加える
-                bunny('Noto Sans JP', {
-                    weights: [400],
-                    subsets: ['latin', 'japanese'],
-                }),
-            ],
-        }),
+        !isVitest &&
+            laravel({
+                input: ['resources/css/app.css', 'resources/js/app.ts'],
+                refresh: true,
+                fonts: [
+                    // Figma は Noto Sans で、和文は Noto Sans JP にフォールバックする
+                    bunny('Noto Sans', {
+                        weights: [400],
+                    }),
+                    // 既定の subsets は latin のみで、和文が端末のフォントで描画されるため japanese を加える
+                    bunny('Noto Sans JP', {
+                        weights: [400],
+                        subsets: ['latin', 'japanese'],
+                    }),
+                ],
+            }),
         inertia(),
         tailwindcss(),
         vue({
@@ -33,9 +41,10 @@ export default defineConfig({
                 },
             },
         }),
-        wayfinder({
-            formVariants: true,
-        }),
+        !isVitest &&
+            wayfinder({
+                formVariants: true,
+            }),
     ]),
     server: {
         watch: {
@@ -46,6 +55,26 @@ export default defineConfig({
                 '**/.junie/**',
                 '**/vendor/**',
             ],
+        },
+    },
+    test: {
+        include: ['tests/Visual/**/*.test.ts'],
+        setupFiles: ['tests/Visual/setup.ts'],
+        browser: {
+            enabled: true,
+            headless: true,
+            // ページもフレームと同じサイズにし、iframe が縮小されないようにする
+            provider: playwright({ contextOptions: { viewport: vrtViewport } }),
+            viewport: vrtViewport,
+            instances: [{ browser: 'chromium' }],
+            expect: {
+                toMatchScreenshot: {
+                    screenshotOptions: {
+                        animations: 'disabled',
+                        caret: 'hide',
+                    },
+                },
+            },
         },
     },
     lint: {
