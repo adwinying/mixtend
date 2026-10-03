@@ -10,6 +10,11 @@ import { playwright } from 'vite-plus/test/browser-playwright';
 /** VRT は Laravel を介さないため、public/hot を書き換える laravel() と artisan を呼ぶ wayfinder() を外す */
 const isVitest = process.env.VITEST !== undefined;
 
+// 描画は OS で変わるため、ベースラインと同じ Playwright の Docker イメージ（linux/arm64）でのみ実行する
+if (isVitest && process.platform !== 'linux') {
+    throw new Error('VRT は npm run test:vrt で Docker 上で実行してください');
+}
+
 /** Figma のフレームと同じデスクトップのサイズ。モバイルのデザインは提供されていないため、モバイルの VRT は省略する */
 const vrtViewport = { width: 1440, height: 1473 };
 
