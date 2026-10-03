@@ -42,3 +42,16 @@ test('接続失敗でも、例外の context の url は解決後の完全な UR
             'url' => 'https://mixtend.test/api/schedule.json?week=1',
         ]));
 });
+
+test('JSON のルートが配列なら MixtendHttpException を投げる', function (string $body) {
+    Http::fake(['https://mixtend.test/api/schedule.json' => Http::response($body)]);
+
+    expect(fn () => app(SendMixtendRequestAction::class)->run(MixtendRoute::Schedule))
+        ->toThrow(MixtendHttpException::class);
+})->with(['空の配列' => '[]', '要素のある配列' => '[1]']);
+
+test('空の JSON オブジェクトは空の配列として返す', function () {
+    Http::fake(['https://mixtend.test/api/schedule.json' => Http::response('{}')]);
+
+    expect(app(SendMixtendRequestAction::class)->run(MixtendRoute::Schedule))->toBe([]);
+});

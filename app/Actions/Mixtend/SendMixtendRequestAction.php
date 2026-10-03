@@ -8,6 +8,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Log;
 use JsonException;
+use stdClass;
 
 /**
  * Mixtend にリクエストを送信し、レスポンスを mixtend チャネルに記録する。
@@ -56,7 +57,8 @@ class SendMixtendRequestAction
             throw new MixtendHttpException('Mixtend のレスポンスが不正な JSON です', $context, $exception);
         }
 
-        if (! is_array($body)) {
+        // json() はオブジェクトも配列も PHP の配列にするため、ルートがオブジェクトかは object() で確かめる
+        if (! is_array($body) || ! $response->object() instanceof stdClass) {
             throw new MixtendHttpException('Mixtend のレスポンスが JSON オブジェクトではありません', $context);
         }
 
