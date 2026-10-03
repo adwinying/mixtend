@@ -39,5 +39,14 @@ jobs:
       - name: Setup Application
         run: composer setup
 
+      - name: Check Generated Types
+        run: |
+          php artisan typescript:transform
+          if [ -n "$(git status --porcelain -- resources/js/generated)" ]; then
+            echo "::error::生成された型が古いです。composer generate-types を実行してコミットしてください。"
+            git diff -- resources/js/generated
+            exit 1
+          fi
+
       - name: Run CI Checks
         run: composer ci:check
