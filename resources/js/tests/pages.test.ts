@@ -2,14 +2,13 @@ import { afterEach, expect, test, vi } from 'vite-plus/test';
 import { page } from 'vite-plus/test/browser';
 import { createApp } from 'vue';
 import type { App, Component } from 'vue';
-// @ エイリアスは laravel() が定義するため、VRT では相対パスで読み込む
-import ErrorPage from '../pages/error.vue';
-import ScheduleIndex from '../pages/schedule-index.vue';
 import type {
     ErrorResponse,
     ScheduleIndexResponse,
     ScheduleIndexResponseDay,
-} from '../generated/types';
+} from '@/generated/types';
+import ErrorPage from '@/pages/error.vue';
+import ScheduleIndex from '@/pages/schedule-index.vue';
 
 /** Head は createInertiaApp の初期化に依存するため、Inertia を介さずにマウントできるよう外す */
 vi.mock('@inertiajs/vue3', () => ({ Head: () => null }));
