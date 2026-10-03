@@ -58,8 +58,8 @@ export default defineConfig({
         },
     },
     test: {
-        include: ['tests/Visual/**/*.test.ts'],
-        setupFiles: ['tests/Visual/setup.ts'],
+        include: ['resources/js/tests/**/*.test.ts'],
+        setupFiles: ['resources/js/tests/setup.ts'],
         browser: {
             enabled: true,
             headless: true,

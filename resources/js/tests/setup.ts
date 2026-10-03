@@ -1,4 +1,4 @@
-import '../../resources/css/app.css';
+import '../../css/app.css';
 
 /** 本番は laravel-vite-plugin が bunny から取得したフォントを配信する（vite.config.ts の fonts）。VRT では同じ配信元を直接読み込む */
 const fonts = document.createElement('link');
