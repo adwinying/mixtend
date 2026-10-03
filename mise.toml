@@ -1,0 +1,30 @@
+[tools]
+"github:adwinying/php" = "8.5"
+"github:composer/composer" = "latest"
+node = "24"
+"npm:figlet" = "latest"
+
+[hooks]
+postinstall = """
+composer_dir=$(mise where github:composer/composer)
+if [ -f "$composer_dir/composer.phar" ]; then
+  mv "$composer_dir/composer.phar" "$composer_dir/composer"
+fi
+"""
+enter = """
+figlet mixtend
+echo "$(composer --version)"
+echo "node: $(node --version)"
+echo "npm: v$(npm --version)"
+"""
+
+[tasks."backend:lint"]
+description = "Run PHP linter"
+run = "composer lint"
+
+[tasks."frontend:lint"]
+description = "Run Frontend Lint"
+run = "bun run lint"
+
+[settings]
+experimental = true
