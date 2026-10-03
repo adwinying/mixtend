@@ -93,7 +93,13 @@ test('API が利用できないときは 502 でエラーページを描画す�
     '日付の値が空文字列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22' => ''])),
     'summary の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.summary' => null])),
     '勤務時間の形式違い' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時'])),
+    '勤務時間の終了が開始と同時刻' => fn () => Http::response(scheduleApiSampleWith(['working_hours.end' => '10:00'])),
+    '勤務時間の終了が開始より前' => fn () => Http::response(scheduleApiSampleWith(['working_hours.end' => '09:59'])),
+    '勤務時間の開始が配列' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => ['10:00']])),
     'ミーティングの時刻の形式違い' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '11:00:00'])),
+    'ミーティングの終了が開始と同時刻' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '10:00'])),
+    'ミーティングの終了が開始より前' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '09:59'])),
+    'ミーティングの開始が配列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.start' => ['10:00']])),
     '不正なタイムゾーン' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.timezone' => 'Asia/Nowhere'])),
     '日付キーの形式違い' => fn () => Http::response(scheduleApiSampleWith(['meetings' => ['2021/03/22' => []]])),
 ]);
