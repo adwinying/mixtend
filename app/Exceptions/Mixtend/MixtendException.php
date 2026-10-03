@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Exceptions\Schedule;
+namespace App\Exceptions\Mixtend;
 
 use RuntimeException;
 use Throwable;
 
 /**
- * スケジュール API の障害（接続失敗・非2xx・不正な JSON・検証エラー）を表す。
+ * Mixtend 由来の失敗の基底。種類はサブクラスで区別し、捕捉はこのクラスでまとめて行う。
  * 報告は Laravel のデフォルトの reporter に任せ、context() の内容がログに添えられる。
  */
-class ScheduleException extends RuntimeException
+abstract class MixtendException extends RuntimeException
 {
     /**
      * @param  array<string, mixed>  $context  URL・ステータス・検証エラーなど

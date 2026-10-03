@@ -1,6 +1,7 @@
 <?php
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\Mixtend\MixtendHttpException;
+use App\Exceptions\Mixtend\MixtendScheduleException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Log\Events\MessageLogged;
@@ -78,7 +79,7 @@ test('API の障害をコンテキスト付きで1度だけ報告する', functi
     $this->get(route('home'))->assertStatus(502);
 
     Exceptions::assertReportedCount(1);
-    Exceptions::assertReported(fn (ScheduleException $e) => $e->context() === ['url' => config('services.schedule.url'), 'status' => 503]
+    Exceptions::assertReported(fn (MixtendHttpException $e) => $e->context() === ['url' => config('services.schedule.url'), 'status' => 503]
         && $e->getPrevious() instanceof RequestException);
 });
 
@@ -88,7 +89,7 @@ test('API の検証エラーをコンテキストとして報告する', functio
 
     $this->get(route('home'))->assertStatus(502);
 
-    Exceptions::assertReported(fn (ScheduleException $e) => array_keys($e->context()['errors']) === ['working_hours.start']);
+    Exceptions::assertReported(fn (MixtendScheduleException $e) => array_keys($e->context()['errors']) === ['working_hours.start']);
 });
 
 test('debug 有効時は API の障害の詳細をエラーページに表示する', function () {

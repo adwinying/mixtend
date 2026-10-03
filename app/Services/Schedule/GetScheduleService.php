@@ -2,7 +2,8 @@
 
 namespace App\Services\Schedule;
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\Mixtend\MixtendHttpException;
+use App\Exceptions\Mixtend\MixtendScheduleException;
 use App\Services\Schedule\Data\MeetingData;
 use App\Services\Schedule\Data\ScheduleData;
 use Carbon\CarbonImmutable;
@@ -26,7 +27,8 @@ class GetScheduleService
     public function __construct(private ScheduleApiClient $client) {}
 
     /**
-     * @throws ScheduleException API の障害、またはレスポンスが想定外の形式
+     * @throws MixtendHttpException Mixtend との通信の失敗
+     * @throws MixtendScheduleException レスポンスが想定外の形式
      */
     public function run(): ScheduleData
     {
@@ -96,7 +98,7 @@ class GetScheduleService
      * @param  array<mixed>  $schedule
      * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}
      *
-     * @throws ScheduleException
+     * @throws MixtendScheduleException
      */
     private function validate(array $schedule): array
     {
@@ -112,7 +114,7 @@ class GetScheduleService
                 'meetings.*.*.timezone' => ['required', 'timezone:all'],
             ])->validate();
         } catch (ValidationException $exception) {
-            throw new ScheduleException('スケジュール API のレスポンスが想定外の形式です', ['errors' => $exception->errors()], $exception);
+            throw new MixtendScheduleException('スケジュール API のレスポンスが想定外の形式です', ['errors' => $exception->errors()], $exception);
         }
 
         /** @var array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>} */

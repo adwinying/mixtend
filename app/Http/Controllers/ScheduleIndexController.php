@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\Mixtend\MixtendException;
 use App\Http\Responses\ErrorResponse;
 use App\Http\Responses\ScheduleIndexResponse;
 use App\Services\Schedule\GetScheduleService;
@@ -20,7 +20,7 @@ class ScheduleIndexController extends Controller
     {
         try {
             $schedule = $getSchedule->run();
-        } catch (ScheduleException $exception) {
+        } catch (MixtendException $exception) {
             report($exception);
 
             return Inertia::render('error', ErrorResponse::fromException(502, $exception))

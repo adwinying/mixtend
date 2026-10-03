@@ -2,7 +2,7 @@
 
 namespace App\Services\Schedule;
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\Mixtend\MixtendHttpException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +22,7 @@ class ScheduleApiClient
      *
      * @return array<mixed>
      *
-     * @throws ScheduleException 接続失敗・タイムアウト・非2xx・JSON オブジェクト以外のレスポンス
+     * @throws MixtendHttpException 接続失敗・タイムアウト・非2xx・不正な JSON・JSON オブジェクト以外のレスポンス
      */
     public function fetch(): array
     {
@@ -33,7 +33,7 @@ class ScheduleApiClient
                 ->timeout(self::TIMEOUT_SECONDS)
                 ->get($url);
         } catch (ConnectionException $exception) {
-            throw new ScheduleException('スケジュール API に接続できません', ['url' => $url], $exception);
+            throw new MixtendHttpException('スケジュール API に接続できません', ['url' => $url], $exception);
         }
 
         Log::channel('schedule')->info('スケジュール API のレスポンス', [
@@ -47,17 +47,17 @@ class ScheduleApiClient
 
         // failed() は 4xx / 5xx のみを対象とし、リダイレクト先のない 3xx を通してしまう
         if (! $response->successful()) {
-            throw new ScheduleException('スケジュール API がエラーを返しました', $context, $response->toException());
+            throw new MixtendHttpException('スケジュール API がエラーを返しました', $context, $response->toException());
         }
 
         try {
             $schedule = $response->json(flags: JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
-            throw new ScheduleException('スケジュール API のレスポンスが不正な JSON です', $context, $exception);
+            throw new MixtendHttpException('スケジュール API のレスポンスが不正な JSON です', $context, $exception);
         }
 
         if (! is_array($schedule)) {
-            throw new ScheduleException('スケジュール API のレスポンスが JSON オブジェクトではありません', $context);
+            throw new MixtendHttpException('スケジュール API のレスポンスが JSON オブジェクトではありません', $context);
         }
 
         return $schedule;

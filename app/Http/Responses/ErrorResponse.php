@@ -2,7 +2,7 @@
 
 namespace App\Http\Responses;
 
-use App\Exceptions\Schedule\ScheduleException;
+use App\Exceptions\Mixtend\MixtendException;
 use Spatie\LaravelData\Data;
 use Throwable;
 
@@ -23,7 +23,7 @@ class ErrorResponse extends Data
         }
 
         $detail = $exception::class.': '.$exception->getMessage();
-        if ($exception instanceof ScheduleException) {
+        if ($exception instanceof MixtendException) {
             $detail .= "\n".json_encode($exception->context(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
