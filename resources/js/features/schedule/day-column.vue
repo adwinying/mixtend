@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ScheduleIndexResponseMeeting } from '@/generated/types';
-import { HOUR_HEIGHT_PX } from './grid';
-import ScheduleMeetingBlock from './meeting-block.vue';
+import { HOUR_HEIGHT_PX } from '@/features/schedule/grid';
+import ScheduleMeetingBlock from '@/features/schedule/meeting-block.vue';
 
 defineProps<{
     heading: string;

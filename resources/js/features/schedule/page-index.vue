@@ -4,15 +4,15 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/ja';
 import CommonLayout from '@/components/common/layout.vue';
 import type { ScheduleIndexResponse } from '@/generated/types';
-import ScheduleDayColumn from './day-column.vue';
-import ScheduleHourAxis from './hour-axis.vue';
+import ScheduleDayColumn from '@/features/schedule/day-column.vue';
+import ScheduleHourAxis from '@/features/schedule/hour-axis.vue';
 
 const props = defineProps<ScheduleIndexResponse>();
 
 const formatDate = (date: string) =>
     dayjs(date).locale('ja').format('M/D（ddd）');
 
-/** 予定が0件でもグリッドを表示するため、空の列に「予定はありません」を出す */
+/** ミーティングが0件でもグリッドを表示するため、空の列に「予定はありません」を出す */
 const columns = computed(() =>
     props.days.length > 0
         ? props.days.map(({ date, meetings }) => ({

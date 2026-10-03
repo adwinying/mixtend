@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { HOUR_HEIGHT_PX } from './grid';
+import { HOUR_HEIGHT_PX } from '@/features/schedule/grid';
 
 defineProps<{ hours: string[] }>();
 </script>

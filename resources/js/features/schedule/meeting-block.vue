@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ScheduleIndexResponseMeeting } from '@/generated/types';
-import { GRID_LINE_PX, HOUR_HEIGHT_PX, toMinutes } from './grid';
+import {
+    GRID_LINE_PX,
+    HOUR_HEIGHT_PX,
+    toMinutes,
+} from '@/features/schedule/grid';
 
 const props = defineProps<{
     meeting: ScheduleIndexResponseMeeting;
@@ -18,7 +22,7 @@ const durationMinutes = computed(
 const isCompact = computed(() => durationMinutes.value < COMPACT_BELOW_MINUTES);
 
 /** 開始・終了時刻から、行にスナップせず分単位でブロックを配置する */
-const style = computed(() => {
+const positionStyle = computed(() => {
     const toPx = (minutes: number) => (minutes / 60) * HOUR_HEIGHT_PX;
 
     return {
@@ -32,7 +36,7 @@ const style = computed(() => {
     <div
         class="absolute inset-x-0 truncate bg-primary px-5.25 text-white"
         :class="isCompact ? 'py-0.5 text-sm leading-4' : 'py-5'"
-        :style="style"
+        :style="positionStyle"
         :title="meeting.summary"
     >
         {{ meeting.summary }}
