@@ -3,8 +3,10 @@
 use App\Exceptions\Schedule\ScheduleException;
 use Illuminate\Http\Client\Request;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Testing\AssertableInertia as Assert;
 
 beforeEach(function () {
@@ -24,6 +26,21 @@ function scheduleApiSampleWith(array $overrides): array
     }
 
     return $schedule;
+}
+
+/**
+ * @return ArrayObject<int, array<mixed>> 記録された warning のコンテキスト
+ */
+function recordLogWarnings(): ArrayObject
+{
+    $warnings = new ArrayObject;
+    Log::listen(function (MessageLogged $log) use ($warnings) {
+        if ($log->level === 'warning') {
+            $warnings[] = $log->context;
+        }
+    });
+
+    return $warnings;
 }
 
 test('API が利用できないときは 502 でエラーページを描画する', function (mixed $fakeResponse) {
@@ -169,4 +186,70 @@ test('API のレスポンスを schedule チャネルに記録する', function 
         ]);
 
     unlink($logPath);
+});
+
+test('Tokyo 以外のタイムゾーンのミーティングを日本時間に変換し、変換後の日付と開始時刻の順に並べる', function () {
+    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+        // Honolulu（UTC-10）の 20:00 は翌日 15:00 の日本時間になり、2021-03-22 の列は無くなる
+        'meetings.2021-03-22.0' => ['summary' => 'Meeting 1', 'start' => '20:00', 'end' => '21:00', 'timezone' => 'Pacific/Honolulu'],
+        // London（UTC+0）の 01:30 は同じ日の 10:30 の日本時間になる
+        'meetings.2021-03-24.0' => ['summary' => 'Meeting 4', 'start' => '01:30', 'end' => '02:30', 'timezone' => 'Europe/London'],
+    ]))]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('days', [
+                ['date' => '2021-03-23', 'meetings' => [
+                    ['summary' => 'Meeting 2', 'start' => '14:00', 'end' => '15:00'],
+                    ['summary' => 'Meeting 1', 'start' => '15:00', 'end' => '16:00'],
+                    ['summary' => 'Meeting 3', 'start' => '16:00', 'end' => '17:00'],
+                ]],
+                ['date' => '2021-03-24', 'meetings' => [
+                    ['summary' => 'Meeting 4', 'start' => '10:30', 'end' => '11:30'],
+                ]],
+            ])
+        );
+});
+
+test('同じ日のミーティングが重なると warning を記録し、props はそのまま描画する', function () {
+    $warnings = recordLogWarnings();
+    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+        // 並べ替えると先頭になり、隣り合わない Meeting 3 とも重なる
+        'meetings.2021-03-23.2' => ['summary' => 'Meeting 5', 'start' => '13:00', 'end' => '16:30', 'timezone' => 'Asia/Tokyo'],
+    ]))]);
+
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('days.1.meetings', [
+                ['summary' => 'Meeting 5', 'start' => '13:00', 'end' => '16:30'],
+                ['summary' => 'Meeting 2', 'start' => '14:00', 'end' => '15:00'],
+                ['summary' => 'Meeting 3', 'start' => '16:00', 'end' => '17:00'],
+            ])
+        );
+
+    expect($warnings->getArrayCopy())->toBe([
+        [
+            'date' => '2021-03-23',
+            'previous' => ['summary' => 'Meeting 5', 'start' => '13:00', 'end' => '16:30'],
+            'next' => ['summary' => 'Meeting 2', 'start' => '14:00', 'end' => '15:00'],
+        ],
+        [
+            'date' => '2021-03-23',
+            'previous' => ['summary' => 'Meeting 5', 'start' => '13:00', 'end' => '16:30'],
+            'next' => ['summary' => 'Meeting 3', 'start' => '16:00', 'end' => '17:00'],
+        ],
+    ]);
+});
+
+test('終了と開始が同時刻の連続するミーティングでは warning を記録しない', function () {
+    $warnings = recordLogWarnings();
+    Http::fake([config('services.schedule.url') => Http::response(scheduleApiSampleWith([
+        'meetings.2021-03-23.1.start' => '15:00',
+    ]))]);
+
+    $this->get(route('home'))->assertOk();
+
+    expect($warnings->getArrayCopy())->toBe([]);
 });
