@@ -53,6 +53,7 @@ export default defineConfig({
             'resources/js/components/ui/*',
             'resources/js/routes/**',
             'resources/js/wayfinder/**',
+            'resources/js/generated/**',
         ],
         options: {
             denyWarnings: true,
@@ -70,6 +71,7 @@ export default defineConfig({
             '.github/**',
             'composer.json',
             'resources/js/components/ui/*',
+            'resources/js/generated/**',
             'resources/views/mail/*',
         ],
         sortTailwindcss: {
