@@ -75,3 +75,5 @@ jobs:
         with:
           name: vrt-diffs
           path: .vitest-attachments
+          # 既定ではドットで始まるディレクトリ内のファイルも除外される
+          include-hidden-files: true
