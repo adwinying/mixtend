@@ -16,8 +16,10 @@ export default defineConfig({
                 bunny('Noto Sans', {
                     weights: [400],
                 }),
+                // 既定の subsets は latin のみで、和文が端末のフォントで描画されるため japanese を加える
                 bunny('Noto Sans JP', {
                     weights: [400],
+                    subsets: ['latin', 'japanese'],
                 }),
             ],
         }),
