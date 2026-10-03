@@ -1,35 +1,11 @@
-import { afterEach, expect, test, vi } from 'vite-plus/test';
+import { expect, test } from 'vite-plus/test';
 import { page } from 'vite-plus/test/browser';
-import { createApp } from 'vue';
-import type { App, Component } from 'vue';
 import type {
-    ErrorResponse,
     ScheduleIndexResponse,
     ScheduleIndexResponseDay,
 } from '@/generated/types';
-import ErrorPage from '@/pages/error.vue';
-import ScheduleIndex from '@/pages/schedule-index.vue';
-
-/** Head は createInertiaApp の初期化に依存するため、Inertia を介さずにマウントできるよう外す */
-vi.mock('@inertiajs/vue3', () => ({ Head: () => null }));
-
-let app: App | undefined;
-
-afterEach(() => {
-    app?.unmount();
-    document.body.replaceChildren();
-});
-
-/** document.fonts.ready は読み込み開始前だと即座に解決するため、レイアウトを確定させてフォントの読み込みを始めさせてから待つ */
-const mountPage = async (
-    component: Component,
-    props: Record<string, unknown>,
-) => {
-    app = createApp(component, props);
-    app.mount(document.body.appendChild(document.createElement('div')));
-    document.body.getBoundingClientRect();
-    await document.fonts.ready;
-};
+import SchedulePageIndex from '@/features/schedule/page-index.vue';
+import { mountPage } from '@/tests/mount-page';
 
 const hours = [
     '10:00',
@@ -109,20 +85,9 @@ const scheduleStates = {
 } satisfies Record<string, ScheduleIndexResponse>;
 
 test.each(Object.entries(scheduleStates))('%s', async (name, props) => {
-    await mountPage(ScheduleIndex, props);
+    await mountPage(SchedulePageIndex, props);
 
     await expect
         .element(page.elementLocator(document.body))
         .toMatchScreenshot(name);
-});
-
-test('error-502', async () => {
-    await mountPage(ErrorPage, {
-        status: 502,
-        detail: null,
-    } satisfies ErrorResponse);
-
-    await expect
-        .element(page.elementLocator(document.body))
-        .toMatchScreenshot('error-502');
 });
