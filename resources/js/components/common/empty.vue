@@ -2,6 +2,6 @@
 <template>
     <div class="flex flex-col items-center gap-4">
         <slot name="icon" />
-        <p><slot /></p>
+        <p class="text-center"><slot /></p>
     </div>
 </template>
