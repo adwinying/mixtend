@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Http;
 /**
  * Mixtend 専用の HTTP クライアントを生成する。全エンドポイント共通の設定はここに置く。
  */
-class GetMixtendHttpClient
+class GetMixtendHttpClientAction
 {
     private const string USER_AGENT = 'Mixtend Coding Test';
 

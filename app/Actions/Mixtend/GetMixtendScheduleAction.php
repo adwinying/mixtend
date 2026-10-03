@@ -12,9 +12,9 @@ use Illuminate\Validation\ValidationException;
 /**
  * Mixtend からスケジュールを取得する。レスポンスは信頼境界なので、形式を検証してから返す。
  */
-class GetMixtendSchedule
+class GetMixtendScheduleAction
 {
-    public function __construct(private SendMixtendRequest $sendMixtendRequest) {}
+    public function __construct(private SendMixtendRequestAction $sendMixtendRequest) {}
 
     /**
      * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}

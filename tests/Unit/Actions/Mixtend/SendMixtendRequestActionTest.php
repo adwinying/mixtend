@@ -1,6 +1,6 @@
 <?php
 
-use App\Actions\Mixtend\SendMixtendRequest;
+use App\Actions\Mixtend\SendMixtendRequestAction;
 use App\Enums\MixtendRoute;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use Illuminate\Http\Client\Request;
@@ -16,7 +16,7 @@ beforeEach(function () {
 test('ベース URL とパスを結合し、User-Agent を付けて送信して JSON オブジェクトを返す', function () {
     Http::fake(['https://mixtend.test/api/schedule.json?week=1' => Http::response(['ok' => true])]);
 
-    $body = app(SendMixtendRequest::class)->run(MixtendRoute::Schedule, ['week' => 1]);
+    $body = app(SendMixtendRequestAction::class)->run(MixtendRoute::Schedule, ['week' => 1]);
 
     expect($body)->toBe(['ok' => true]);
     Http::assertSent(fn (Request $request) => $request->method() === 'GET'
@@ -27,7 +27,7 @@ test('ベース URL とパスを結合し、User-Agent を付けて送信して 
 test('非2xx では完全な URL とステータスを持つ MixtendHttpException を投げる', function () {
     Http::fake(['https://mixtend.test/api/schedule.json' => Http::response('Not Found', 404)]);
 
-    expect(fn () => app(SendMixtendRequest::class)->run(MixtendRoute::Schedule))
+    expect(fn () => app(SendMixtendRequestAction::class)->run(MixtendRoute::Schedule))
         ->toThrow(fn (MixtendHttpException $e) => expect($e->context())->toBe([
             'url' => 'https://mixtend.test/api/schedule.json',
             'status' => 404,
@@ -37,7 +37,7 @@ test('非2xx では完全な URL とステータスを持つ MixtendHttpExceptio
 test('接続失敗でも、例外の context の url は解決後の完全な URL になる', function () {
     Http::fake(['https://mixtend.test/api/schedule.json?week=1' => Http::failedConnection()]);
 
-    expect(fn () => app(SendMixtendRequest::class)->run(MixtendRoute::Schedule, ['week' => 1]))
+    expect(fn () => app(SendMixtendRequestAction::class)->run(MixtendRoute::Schedule, ['week' => 1]))
         ->toThrow(fn (MixtendHttpException $e) => expect($e->context())->toBe([
             'url' => 'https://mixtend.test/api/schedule.json?week=1',
         ]));

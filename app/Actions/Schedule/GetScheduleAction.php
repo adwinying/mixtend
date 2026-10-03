@@ -2,7 +2,7 @@
 
 namespace App\Actions\Schedule;
 
-use App\Actions\Mixtend\GetMixtendSchedule;
+use App\Actions\Mixtend\GetMixtendScheduleAction;
 use App\Data\ScheduleData;
 use App\Data\ScheduleMeetingData;
 use App\Exceptions\Mixtend\MixtendHttpException;
@@ -19,11 +19,11 @@ use Illuminate\Support\Facades\Log;
  * - 勤務時間はミーティングと同じタイムゾーン（Asia/Tokyo）
  * - 重なりのレイアウトには未対応。重なるデータが現れたら warning を記録する
  */
-class GetSchedule
+class GetScheduleAction
 {
     private const string TOKYO_TIMEZONE = 'Asia/Tokyo';
 
-    public function __construct(private GetMixtendSchedule $getMixtendSchedule) {}
+    public function __construct(private GetMixtendScheduleAction $getMixtendSchedule) {}
 
     /**
      * @throws MixtendHttpException Mixtend との通信の失敗

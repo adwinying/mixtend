@@ -12,9 +12,9 @@ use JsonException;
 /**
  * Mixtend にリクエストを送信し、レスポンスを mixtend チャネルに記録する。
  */
-class SendMixtendRequest
+class SendMixtendRequestAction
 {
-    public function __construct(private GetMixtendHttpClient $getHttpClient) {}
+    public function __construct(private GetMixtendHttpClientAction $getHttpClient) {}
 
     /**
      * @param  array<string, mixed>  $query
