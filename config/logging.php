@@ -1,5 +1,6 @@
 <?php
 
+use Monolog\Formatter\JsonFormatter;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -79,6 +80,13 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'max_files' => 3,
             'replace_placeholders' => true,
+        ],
+
+        'schedule' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/schedule.log'),
+            'level' => 'info',
+            'formatter' => JsonFormatter::class,
         ],
 
         'slack' => [

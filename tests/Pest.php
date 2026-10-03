@@ -44,7 +44,23 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * スケジュール API ドキュメントのサンプルレスポンス。
+ * 日付キーの並び替えを検証できるよう、順序をあえて崩している。
+ *
+ * @return array{working_hours: array{start: string, end: string}, meetings: array<string, list<array{summary: string, start: string, end: string, timezone: string}>>}
+ */
+function scheduleApiSample(): array
 {
-    // ..
+    return [
+        'working_hours' => ['start' => '10:00', 'end' => '19:00'],
+        'meetings' => [
+            '2021-03-24' => [['summary' => 'Meeting 4', 'start' => '10:30', 'end' => '11:30', 'timezone' => 'Asia/Tokyo']],
+            '2021-03-22' => [['summary' => 'Meeting 1', 'start' => '10:00', 'end' => '11:00', 'timezone' => 'Asia/Tokyo']],
+            '2021-03-23' => [
+                ['summary' => 'Meeting 2', 'start' => '14:00', 'end' => '15:00', 'timezone' => 'Asia/Tokyo'],
+                ['summary' => 'Meeting 3', 'start' => '16:00', 'end' => '17:00', 'timezone' => 'Asia/Tokyo'],
+            ],
+        ],
+    ];
 }

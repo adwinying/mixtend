@@ -12,8 +12,12 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
+                // Figma は Noto Sans で、和文は Noto Sans JP にフォールバックする
+                bunny('Noto Sans', {
+                    weights: [400],
+                }),
+                bunny('Noto Sans JP', {
+                    weights: [400],
                 }),
             ],
         }),

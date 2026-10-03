@@ -1,4 +1,4 @@
-declare namespace Illuminate {
+export type CursorPaginatedDataCollection<TKey, TValue> = CursorPaginator<TKey, TValue>;
 export type CursorPaginator<TKey, TValue> = {
 data: TKey extends string ? Record<TKey, TValue> : TValue[],
 links: {
@@ -15,7 +15,7 @@ prev_cursor: string | null,
 prev_page_url: string | null,
 },
 };
-export type CursorPaginatorInterface<TKey, TValue> = Illuminate.CursorPaginator<TKey, TValue>;
+export type CursorPaginatorInterface<TKey, TValue> = CursorPaginator<TKey, TValue>;
 export type LengthAwarePaginator<TKey, TValue> = {
 data: TKey extends string ? Record<TKey, TValue> : TValue[],
 links: {
@@ -37,11 +37,18 @@ prev_page_url: string | null,
 to: number | null,
 },
 };
-export type LengthAwarePaginatorInterface<TKey, TValue> = Illuminate.LengthAwarePaginator<TKey, TValue>;
-}
-declare namespace Spatie {
-namespace LaravelData {
-export type CursorPaginatedDataCollection<TKey, TValue> = Illuminate.CursorPaginator<TKey, TValue>;
-export type PaginatedDataCollection<TKey, TValue> = Illuminate.LengthAwarePaginator<TKey, TValue>;
-}
-}
+export type LengthAwarePaginatorInterface<TKey, TValue> = LengthAwarePaginator<TKey, TValue>;
+export type PaginatedDataCollection<TKey, TValue> = LengthAwarePaginator<TKey, TValue>;
+export type ScheduleIndexResponse = {
+days: ScheduleIndexResponseDay[],
+hours: string[],
+};
+export type ScheduleIndexResponseDay = {
+date: string,
+meetings: ScheduleIndexResponseMeeting[],
+};
+export type ScheduleIndexResponseMeeting = {
+summary: string,
+start: string,
+end: string,
+};
