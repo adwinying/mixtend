@@ -45,7 +45,8 @@ class ScheduleApiClient
 
         $context = ['url' => $url, 'status' => $response->status()];
 
-        if ($response->failed()) {
+        // failed() は 4xx / 5xx のみを対象とし、リダイレクト先のない 3xx を通してしまう
+        if (! $response->successful()) {
             throw new ScheduleException('スケジュール API がエラーを返しました', $context, $response->toException());
         }
 

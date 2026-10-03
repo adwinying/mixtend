@@ -107,8 +107,7 @@ class GetScheduleService
                 'working_hours' => ['required', 'array'],
                 'working_hours.start' => ['required', 'date_format:H:i'],
                 'working_hours.end' => ['required', 'date_format:H:i'],
-                'meetings' => ['present', 'array', $this->dateKeysRule(...)],
-                'meetings.*' => ['list'],
+                'meetings' => ['present', 'array', $this->meetingsByDateRule(...)],
                 'meetings.*.*.summary' => ['required', 'string'],
                 'meetings.*.*.start' => ['required', 'date_format:H:i'],
                 'meetings.*.*.end' => ['required', 'date_format:H:i'],
@@ -123,14 +122,18 @@ class GetScheduleService
     }
 
     /**
-     * meetings は Y-m-d の日付をキーとするマップ。キーは Validator のルールで検証できないため、クロージャで検証する。
+     * meetings は Y-m-d の日付をキー、ミーティングのリストを値とするマップ。
+     * キーは Validator のルールで検証できず、'meetings.*' => 'list' は空文字列の値を検証せずに通すため、クロージャで検証する。
      */
-    private function dateKeysRule(string $attribute, mixed $meetings, Closure $fail): void
+    private function meetingsByDateRule(string $attribute, mixed $meetings, Closure $fail): void
     {
-        foreach (array_keys((array) $meetings) as $date) {
+        foreach ((array) $meetings as $date => $meetingsOfDay) {
             $parsed = DateTimeImmutable::createFromFormat('!Y-m-d', (string) $date);
             if ($parsed === false || $parsed->format('Y-m-d') !== (string) $date) {
                 $fail("{$attribute} のキー {$date} が Y-m-d 形式の日付ではありません。");
+            }
+            if (! is_array($meetingsOfDay) || ! array_is_list($meetingsOfDay)) {
+                $fail("{$attribute}.{$date} がミーティングのリストではありません。");
             }
         }
     }

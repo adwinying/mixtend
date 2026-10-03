@@ -56,11 +56,13 @@ test('API が利用できないときは 502 でエラーページを描画す�
         );
 })->with([
     '非2xx' => fn () => Http::response('Service Unavailable', 503),
+    'リダイレクト先のない3xx' => fn () => Http::response(scheduleApiSample(), 302),
     'タイムアウト・接続失敗' => fn () => Http::failedConnection(),
     '不正な JSON' => fn () => Http::response('{"working_hours":', 200),
     'JSON がオブジェクトではない' => fn () => Http::response('123', 200),
     'working_hours の欠落' => fn () => Http::response(scheduleApiSampleWith(['working_hours' => null])),
     'meetings の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings' => null])),
+    '日付の値が空文字列' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22' => ''])),
     'summary の欠落' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.summary' => null])),
     '勤務時間の形式違い' => fn () => Http::response(scheduleApiSampleWith(['working_hours.start' => '10時'])),
     'ミーティングの時刻の形式違い' => fn () => Http::response(scheduleApiSampleWith(['meetings.2021-03-22.0.end' => '11:00:00'])),
