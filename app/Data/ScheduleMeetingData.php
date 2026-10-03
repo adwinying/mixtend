@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Actions\Schedule\Data;
+namespace App\Data;
 
-final readonly class MeetingData
+final readonly class ScheduleMeetingData
 {
     /**
      * @param  string  $start  H:i

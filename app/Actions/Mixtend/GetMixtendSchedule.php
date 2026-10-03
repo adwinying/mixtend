@@ -5,6 +5,7 @@ namespace App\Actions\Mixtend;
 use App\Enums\MixtendRoute;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use App\Exceptions\Mixtend\MixtendScheduleException;
+use App\Rules\MixtendMeetingsByDateRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
@@ -30,7 +31,7 @@ class GetMixtendSchedule
                 'working_hours' => ['required', 'array'],
                 'working_hours.start' => ['required', 'date_format:H:i'],
                 'working_hours.end' => ['required', 'date_format:H:i'],
-                'meetings' => ['present', new MeetingsByDateRule],
+                'meetings' => ['present', new MixtendMeetingsByDateRule],
                 'meetings.*.*.summary' => ['required', 'string'],
                 'meetings.*.*.start' => ['required', 'date_format:H:i'],
                 'meetings.*.*.end' => ['required', 'date_format:H:i'],

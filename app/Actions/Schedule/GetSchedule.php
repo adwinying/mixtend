@@ -3,8 +3,8 @@
 namespace App\Actions\Schedule;
 
 use App\Actions\Mixtend\GetMixtendSchedule;
-use App\Actions\Schedule\Data\MeetingData;
-use App\Actions\Schedule\Data\ScheduleData;
+use App\Data\ScheduleData;
+use App\Data\ScheduleMeetingData;
 use App\Exceptions\Mixtend\MixtendHttpException;
 use App\Exceptions\Mixtend\MixtendScheduleException;
 use Carbon\CarbonImmutable;
@@ -38,7 +38,7 @@ class GetSchedule
             foreach ($meetings as $meeting) {
                 $start = $this->toTokyo($date, $meeting['start'], $meeting['timezone']);
                 $end = $this->toTokyo($date, $meeting['end'], $meeting['timezone']);
-                $meetingsByDate[$start->format('Y-m-d')][] = new MeetingData($meeting['summary'], $start->format('H:i'), $end->format('H:i'));
+                $meetingsByDate[$start->format('Y-m-d')][] = new ScheduleMeetingData($meeting['summary'], $start->format('H:i'), $end->format('H:i'));
             }
         }
         ksort($meetingsByDate);
@@ -58,12 +58,12 @@ class GetSchedule
     }
 
     /**
-     * @param  list<MeetingData>  $meetings
-     * @return list<MeetingData>
+     * @param  list<ScheduleMeetingData>  $meetings
+     * @return list<ScheduleMeetingData>
      */
     private function sortByStart(array $meetings): array
     {
-        usort($meetings, fn (MeetingData $a, MeetingData $b) => $a->start <=> $b->start);
+        usort($meetings, fn (ScheduleMeetingData $a, ScheduleMeetingData $b) => $a->start <=> $b->start);
 
         return $meetings;
     }
@@ -72,7 +72,7 @@ class GetSchedule
      * 終了と開始が同時刻の連続するミーティングは重なりとみなさない。
      * 隣り合わないミーティングとの重なりも検出するため、それまでで最も遅く終わるミーティングと比べる。
      *
-     * @param  list<MeetingData>  $meetings  開始時刻順
+     * @param  list<ScheduleMeetingData>  $meetings  開始時刻順
      */
     private function warnOverlaps(array $meetings, string $date): void
     {
